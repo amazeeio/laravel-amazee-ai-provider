@@ -64,16 +64,17 @@ class AmazeeAiProvider extends OpenAiCompatibleProvider implements AudioProvider
 
     /**
      * Get the default / normalized image options for the provider.
+     *
+     * LiteLLM drops pixel sizes it cannot map for non-OpenAI backends (e.g. Gemini on Vertex),
+     * so aspect ratios are also sent as "aspect_ratio", which those backends honour.
      */
     public function defaultImageOptions(?string $size = null, ?string $quality = null): array
     {
+        $sizes = ['1:1' => '1024x1024', '2:3' => '1024x1536', '3:2' => '1536x1024'];
+
         return array_filter([
-            'size' => match ($size) {
-                '1:1' => '1024x1024',
-                '2:3' => '1024x1536',
-                '3:2' => '1536x1024',
-                default => $size,
-            },
+            'size' => $sizes[$size] ?? $size,
+            'aspect_ratio' => isset($sizes[$size]) ? $size : null,
             'quality' => $quality,
         ]);
     }

@@ -43,8 +43,9 @@ To change models or add more regions, define providers with the `amazeeio` drive
             'text' => ['default' => 'chat', 'cheapest' => 'chat', 'smartest' => 'claude-4-6-opus'],
             'embeddings' => ['default' => 'embeddings', 'dimensions' => 1024],
             'image' => ['default' => 'text_to_image'],
+            // Region specific: pick models from your region's catalog (see below).
             'audio' => ['default' => 'tts-1'],
-            'transcription' => ['default' => 'whisper-1'],
+            'transcription' => ['default' => 'gpt-4o-transcribe'],
         ],
     ],
 
@@ -67,6 +68,14 @@ To change models or add more regions, define providers with the `amazeeio` drive
 | Transcription         | `audio/transcriptions`  | none, configure `models.transcription.default` |
 
 `chat`, `embeddings` and `text_to_image` are the aliases every amazee.ai region defines. Any other model in your region's catalog can be passed by name. Provider-specific options are keyed by `amazeeio`.
+
+Speech and transcription models differ per region, and some regions have none. List your region's catalog with:
+
+```bash
+curl "$AMAZEE_ENDPOINT_URL/models" -H "Authorization: Bearer $AMAZEE_LLM_TOKEN"
+```
+
+`->square()`, `->portrait()` and `->landscape()` are sent as both `size` and `aspect_ratio`, so they also apply when a region's `text_to_image` model is not an OpenAI one.
 
 ## Testing
 
