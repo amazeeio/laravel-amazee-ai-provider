@@ -53,3 +53,23 @@ test('images use the text_to_image alias', function (): void {
     Http::assertSent(fn (Request $r): bool => $r->url() === 'https://llm.us103.amazee.ai/v1/images/generations'
         && $r['model'] === 'text_to_image');
 });
+
+test('image aspect ratios are sent as aspect_ratio alongside the pixel size', function (string $method, string $ratio, string $size): void {
+    Http::fake(['*' => Http::response(['data' => [['b64_json' => base64_encode('png')]]])]);
+
+    Image::of('A red apple')->{$method}()->generate('amazeeio');
+
+    Http::assertSent(fn (Request $r): bool => ($r->data()['aspect_ratio'] ?? null) === $ratio && $r['size'] === $size);
+})->with([
+    'square' => ['square', '1:1', '1024x1024'],
+    'portrait' => ['portrait', '2:3', '1024x1536'],
+    'landscape' => ['landscape', '3:2', '1536x1024'],
+]);
+
+test('explicit pixel sizes are sent without aspect_ratio', function (): void {
+    Http::fake(['*' => Http::response(['data' => [['b64_json' => base64_encode('png')]]])]);
+
+    Image::of('A red apple')->size('1024x1024')->generate('amazeeio');
+
+    Http::assertSent(fn (Request $r): bool => $r['size'] === '1024x1024' && ! isset($r['aspect_ratio']));
+});
